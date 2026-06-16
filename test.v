@@ -2,6 +2,36 @@
 `define SIZE 3
 `define DATA_WIDTH 8
 
+module twiddle (
+    output logic signed [15:0] twiddle_real [0:3],
+    output logic signed [15:0] twiddle_imag [0:3]
+);
+
+    assign twiddle_real[0] = 16'sd32767;
+    assign twiddle_real[1] = 16'sd23170;
+    assign twiddle_real[2] = 16'sd0;
+    assign twiddle_real[3] = -16'sd23170;
+
+    assign twiddle_imag[0] = 16'sd0;
+    assign twiddle_imag[1] = -16'sd23170;
+    assign twiddle_imag[2] = -16'sd32767;
+    assign twiddle_imag[3] = -16'sd23170;
+
+endmodule
+/*module bit_reversal(
+    input [`SIZE-1:0] in[`WIDTH-1:0],
+    output reg [`SIZE-1:0] out[`WIDTH-1:0]
+);
+  	integer i, j;
+    always @(*) begin
+        for (i = 0; i < `WIDTH; i = i + 1) begin
+            for (j = 0; j < `SIZE; j = j + 1) begin
+                out[i][j] = in[i][`SIZE-1-j]; 
+            end
+        end
+    end
+endmodule*/
+
 module bit_reversal(
     input [`SIZE-1:0] in[`WIDTH-1:0],
     output reg [`SIZE-1:0] out[`WIDTH-1:0]
@@ -26,17 +56,22 @@ module add_sub(
     output reg [`DATA_WIDTH-1:0] out[`WIDTH-1:0]
 );
     integer i, j;
+    // reg minus;
     reg [`SIZE-1:0] num; 
     reg [`DATA_WIDTH-1:0] inter1[`WIDTH-1:0];
     reg [`DATA_WIDTH-1:0] inter2[`WIDTH-1:0];
     always @(*) begin
+        // minus = 1'b0;
         for (i = 0; i < `SIZE; i = i + 1) begin
             num = 2**i;
             for (j = 0; j < `WIDTH; j = j + 1) begin
                 if (i == 0) begin
                     inter1[j] = ((j & num) == 0) ? in[j] + in[j+num] : in[j-num] - in[j];
+                    // minus = ~minus;
                 end
                 else begin
+                    /*if (j % (2**i) == 0)
+                        minus = ~minus;*/
                     if (i % 2 != 0)
                         inter2[j] = ((j & num) == 0) ? inter1[j] + inter1[j+num] : inter1[j-num] - inter1[j];
                     else
