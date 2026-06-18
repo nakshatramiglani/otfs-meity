@@ -1,5 +1,5 @@
-outFile_real = "references/real_ref.txt";
-outFile_imag = "references/imag_ref.txt";
+outFile_real = "references/fft/real_ref.txt";
+outFile_imag = "references/fft/imag_ref.txt";
 
 X = [0, 1, 2, 3, 4, 5, 6, 7];
 X_fft = fft(X, 8);
