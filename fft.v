@@ -20,8 +20,8 @@ module twiddle_factors(output logic signed[15:0]twiddle_real[`HALF_WIDTH-1:0],
 endmodule
 
 module bit_reversal(
-    input [`DATA_WIDTH-1:0] in[`WIDTH-1:0],
-    output reg [`DATA_WIDTH-1:0] out[`WIDTH-1:0]
+    input signed [`DATA_WIDTH-1:0] in[`WIDTH-1:0],
+    output reg signed [`DATA_WIDTH-1:0] out[`WIDTH-1:0]
 );
     integer i, j;
     reg [`SIZE-1:0] reversed_bits;
