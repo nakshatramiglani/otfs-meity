@@ -1,3 +1,4 @@
 test
 *.vcd
 test1.v
+*.asv
