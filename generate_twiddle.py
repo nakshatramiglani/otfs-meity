@@ -1,6 +1,6 @@
 import numpy as np
 
-N = 16
+N = 256
 
 for k in range(N // 2):
     theta = 2 * np.pi * k / N

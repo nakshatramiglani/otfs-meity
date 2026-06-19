@@ -3,10 +3,10 @@ outFile_imag = "references/fft/imag_ref.txt";
 
 outFile = "data/fft/ref.json";
 
-X = 0:511;
+X = 0:255;
 
 tic;
-X_fft = fft(X, 512);
+X_fft = fft(X, 256);
 elapsedTime = toc;
 disp(['Exeuction time: ', num2str(elapsedTime), ' seconds']);
 X_fft_real = real(X_fft);
