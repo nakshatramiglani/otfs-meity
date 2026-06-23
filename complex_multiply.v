@@ -1,33 +1,32 @@
-`timescale 1 ns / 1 ps
-
-`define WIDTH 16
-`define SIZE $clog2(`WIDTH)
-`define HALF_WIDTH (`WIDTH / 2)
-
-`define DATA_WIDTH 16
-`define TWIDDLE_WIDTH 16
-
-`define OUT_WIDTH (`DATA_WIDTH + `TWIDDLE_WIDTH - 1 + `SIZE)
-
-module complex_multiply(
+module complex_multiply #(
+    parameter FFT_WIDTH = 20,
+    parameter TWIDDLE_WIDTH = 16
+)(
     input logic clk,
     input logic rst_n,
-    input logic signed [`TWIDDLE_WIDTH - 1:0] mul1_real,
-    input logic signed [`TWIDDLE_WIDTH - 1:0] mul1_imag,
-    input logic signed [`OUT_WIDTH - 1:0] mul2_real,
-    input logic signed [`OUT_WIDTH - 1:0] mul2_imag,
-    output reg signed [`OUT_WIDTH - 1:0] out_real,
-    output reg signed [`OUT_WIDTH - 1:0] out_imag
+
+    input logic signed [TWIDDLE_WIDTH-1:0] mul1_real,
+    input logic signed [TWIDDLE_WIDTH-1:0] mul1_imag,
+
+    input logic signed [FFT_WIDTH-1:0] mul2_real,
+    input logic signed [FFT_WIDTH-1:0] mul2_imag,
+
+    output logic signed [FFT_WIDTH-1:0] out_real,
+    output logic signed [FFT_WIDTH-1:0] out_imag
 );
 
-    logic signed [`TWIDDLE_WIDTH + `OUT_WIDTH - 1:0] prr, pii, pri, pir;
+    localparam PROD_WIDTH = FFT_WIDTH + TWIDDLE_WIDTH;
+    localparam SUM_WIDTH  = PROD_WIDTH + 1;
+
+    logic signed [PROD_WIDTH-1:0] prr, pii, pri, pir;
+    logic signed [SUM_WIDTH-1:0] real_full, imag_full;
 
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            prr <= 0;
-            pii <= 0;
-            pri <= 0;
-            pir <= 0;
+            prr <= '0;
+            pii <= '0;
+            pri <= '0;
+            pir <= '0;
         end
         else begin
             prr <= mul1_real * mul2_real;
@@ -37,14 +36,21 @@ module complex_multiply(
         end
     end
 
+    assign real_full = $signed({prr[PROD_WIDTH-1], prr}) -
+                       $signed({pii[PROD_WIDTH-1], pii});
+
+    assign imag_full = $signed({pri[PROD_WIDTH-1], pri}) +
+                       $signed({pir[PROD_WIDTH-1], pir});
+
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
-            out_real <= 0;
-            out_imag <= 0;
+            out_real <= '0;
+            out_imag <= '0;
         end
         else begin
-            out_real <= (prr - pii) >>> (`TWIDDLE_WIDTH - 1);
-            out_imag <= (pri + pir) >>> (`TWIDDLE_WIDTH - 1);
+            out_real <= real_full >>> (TWIDDLE_WIDTH - 1);
+            out_imag <= imag_full >>> (TWIDDLE_WIDTH - 1);
         end
     end
+
 endmodule

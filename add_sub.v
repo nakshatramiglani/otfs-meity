@@ -1,4 +1,6 @@
-module add_sub (
+module add_sub #(
+    parameter DATA_WIDTH = 16
+)(
     input clk,
     input  signed [DATA_WIDTH-1:0] in1_real,
     input  signed [DATA_WIDTH-1:0] in1_imag,
