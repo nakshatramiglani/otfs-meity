@@ -2,4 +2,5 @@ test
 *.vcd
 test1.v
 test1-test.v
+complex_mul_tb.v
 *.asv
