@@ -25,7 +25,7 @@ localparam FFT_WIDTH = DATA_WIDTH + SIZE;
 genvar i; 
 generate
     for(i=0; i<SIZE; i=i+1) begin : DELAYS
-        buffer #(.DEPTH(1 << i), .DATA_WIDTH(FFT_WIDTH - i))
+        buffer #(.DEPTH(1 << (SIZE - i - 1 )), .DATA_WIDTH(FFT_WIDTH - i))
         buff_inst(
             .clk(clk),
             .rst_n(rst_n),
@@ -39,7 +39,7 @@ endgenerate;
 
 generate
     for(i=0; i<SIZE; i=i+1) begin : TWIDDLE_MUL
-        complex_multiply #(.DATA_WIDTH(FFT_WIDTH - i))
+        complex_multiply #(.FFT_WIDTH(FFT_WIDTH - i))
         cmplx_mult_inst(
             .clk(clk),
             .in1_real(twiddle_real),
