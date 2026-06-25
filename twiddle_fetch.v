@@ -1,5 +1,5 @@
 module twiddle_factors #(
-    parameter WIDTH = 16,
+    parameter WIDTH = 32,
     parameter TWIDDLE_WIDTH = 16
 )(
     input logic clk,
