@@ -61,13 +61,14 @@ module stage_tb;
 
     always @(posedge clk) begin
         if(rst_n) begin
-            $display("T=%0t  cnt=%0d  in=(%0d,%0d)  out=(%0d,%0d)",
+            $display("T=%0t  cnt=%0d  in=(%0d,%0d)  out=(%0f,%0f)",
                      $time,
                      sample_count,
                      in_real,
                      in_imag,
-                     out_real,
-                     out_imag);
+                     real'(out_real),
+                     real'(out_imag)
+            );
         end
     end
 

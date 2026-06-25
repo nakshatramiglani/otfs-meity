@@ -63,6 +63,7 @@ module add_sub(
         output reg signed [`OUT_WIDTH - 1:0] out_imag;
 
         logic signed [`OUT_WIDTH + `TWIDDLE_WIDTH:0] prod_rr, prod_ii, prod_ri, prod_ir;
+        logic signed [`OUT_WIDTH + `TWIDDLE_WIDTH:0] round_val;
         logic signed [`OUT_WIDTH + `TWIDDLE_WIDTH:0] temp_real;
         logic signed [`OUT_WIDTH + `TWIDDLE_WIDTH:0] temp_imag;
         logic signed [`OUT_WIDTH + `TWIDDLE_WIDTH:0] round_val;

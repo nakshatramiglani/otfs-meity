@@ -14,12 +14,15 @@ module complex_multiply #(
     output logic signed [FFT_WIDTH-1:0] out_real,
     output logic signed [FFT_WIDTH-1:0] out_imag
 );
-
     localparam PROD_WIDTH = FFT_WIDTH + TWIDDLE_WIDTH;
     localparam SUM_WIDTH  = PROD_WIDTH + 1;
     assign done = 1'b0;
     logic signed [PROD_WIDTH-1:0] prr, pii, pri, pir;
     logic signed [SUM_WIDTH-1:0] real_full, imag_full;
+    logic signed [PROD_WIDTH-1:0] round_val;
+    initial begin
+        round_val = 1 << (TWIDDLE_WIDTH - 2);
+    end
     always_ff @(posedge clk or negedge rst_n) begin
         if (!rst_n) begin
             prr <= '0;
@@ -47,8 +50,8 @@ module complex_multiply #(
             out_imag <= '0;
         end
         else begin
-            out_real <= real_full >>> (TWIDDLE_WIDTH - 1);
-            out_imag <= imag_full >>> (TWIDDLE_WIDTH - 1);
+            out_real <= (real_full + round_val) >>> (TWIDDLE_WIDTH - 1);
+            out_imag <= (imag_full + round_val) >>> (TWIDDLE_WIDTH - 1);
         end
     end
 

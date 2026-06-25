@@ -5,3 +5,5 @@ test1-test.v
 complex_mul_tb.v
 twiddle_fetch_tb.v
 *.asv
+sim
+sim.out

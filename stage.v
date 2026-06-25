@@ -70,8 +70,8 @@ module stage #(
         end
     end
 
-    assign delay_in_real = switch_d4 ? multiplied_real : in_real_ext;
-    assign delay_in_imag = switch_d4 ? multiplied_imag : in_imag_ext;
+    assign delay_in_real = switch ? multiplied_real : in_real_ext;
+    assign delay_in_imag = switch ? multiplied_imag : in_imag_ext;
 
     logic signed [DATA_WIDTH:0] added_real_d1, added_real_d2;
     logic signed [DATA_WIDTH:0] added_imag_d1, added_imag_d2;
