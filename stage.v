@@ -5,7 +5,7 @@
 
 module stage #(
     parameter WIDTH = 16,
-    parameter IN_WIDTH = 16,
+    parameter IN_WIDTH = 32,
     parameter TWIDDLE_WIDTH = 16,
     parameter STAGE = 1 // stages start from 1
 )(
@@ -15,8 +15,8 @@ module stage #(
     input logic signed [IN_WIDTH-1:0] in_imag,
     input logic [$clog2(WIDTH) - 1:0] sample_count,
 
-    output logic signed [31:0] out_real,
-    output logic signed [31:0] out_imag
+    output logic signed [IN_WIDTH-1:0] out_real,
+    output logic signed [IN_WIDTH-1:0] out_imag
 );
 
     localparam SIZE       = $clog2(WIDTH);
@@ -27,11 +27,11 @@ module stage #(
     wire signed [DATA_WIDTH-1:0] delay_in_imag;
 
     // Internal wires for raw buffer output before masking
-    wire signed [DATA_WIDTH:0] raw_delayed_real;
-    wire signed [DATA_WIDTH:0] raw_delayed_imag;
+    wire signed [DATA_WIDTH - 1:0] raw_delayed_real;
+    wire signed [DATA_WIDTH - 1:0] raw_delayed_imag;
 
-    wire signed [DATA_WIDTH:0] delayed_real;
-    wire signed [DATA_WIDTH:0] delayed_imag;
+    wire signed [DATA_WIDTH - 1:0] delayed_real;
+    wire signed [DATA_WIDTH - 1:0] delayed_imag;
 
     wire signed [TWIDDLE_WIDTH - 1:0] twiddle_real;
     wire signed [TWIDDLE_WIDTH - 1:0] twiddle_imag;
@@ -40,19 +40,16 @@ module stage #(
     logic done;
     assign done = 1'b1;
 
-    wire signed [DATA_WIDTH:0] in_real_ext = {in_real[DATA_WIDTH-1], in_real};
-    wire signed [DATA_WIDTH:0] in_imag_ext = {in_imag[DATA_WIDTH-1], in_imag};
-
-    wire signed [DATA_WIDTH+1:0] raw_added_real, raw_added_imag;
-    wire signed [DATA_WIDTH+1:0] raw_sub_real, raw_sub_imag;
+    wire signed [DATA_WIDTH:0] raw_added_real, raw_added_imag;
+    wire signed [DATA_WIDTH - 1:0] raw_sub_real, raw_sub_imag;
 
     wire signed [DATA_WIDTH:0] added_real = raw_added_real[DATA_WIDTH:0];
     wire signed [DATA_WIDTH:0] added_imag = raw_added_imag[DATA_WIDTH:0];
-    wire signed [DATA_WIDTH:0] subtracted_real = raw_sub_real[DATA_WIDTH:0];
-    wire signed [DATA_WIDTH:0] subtracted_imag = raw_sub_imag[DATA_WIDTH:0];
+    wire signed [DATA_WIDTH - 1:0] subtracted_real = raw_sub_real;
+    wire signed [DATA_WIDTH - 1:0] subtracted_imag = raw_sub_imag;
 
-    wire signed [31:0] multiplied_real;
-    wire signed [31:0] multiplied_imag;
+    wire signed [DATA_WIDTH - 1:0] multiplied_real;
+    wire signed [DATA_WIDTH - 1:0] multiplied_imag;
 
     logic flag;
     logic switch;
@@ -94,8 +91,8 @@ module stage #(
     end
 
     // Masked assignments: Feed zeros into the buffer when in reset to prevent X propagation
-    assign delay_in_real = (!rst_n) ? '0 : (switch_d4 ? multiplied_real[DATA_WIDTH-1:0] : in_real_ext);
-    assign delay_in_imag = (!rst_n) ? '0 : (switch_d4 ? multiplied_imag[DATA_WIDTH-1:0] : in_imag_ext);
+    assign delay_in_real = (!rst_n) ? '0 : (switch_d4 ? multiplied_real[DATA_WIDTH-1:0] : in_real);
+    assign delay_in_imag = (!rst_n) ? '0 : (switch_d4 ? multiplied_imag[DATA_WIDTH-1:0] : in_imag);
 
     logic signed [DATA_WIDTH:0] added_real_d1, added_real_d2;
     logic signed [DATA_WIDTH:0] added_imag_d1, added_imag_d2;
@@ -129,14 +126,13 @@ module stage #(
         repeat(STAGE) @(posedge switch_d4);
         flag = 1'b1;
     end
-    assign out_real = (!rst_n | flag) ? 32'sd0 : 
-                      (switch_d4 ? {{15{added_real_d2[16]}}, added_real_d2} : 
-                                   {{15{delayed_real[16]}}, delayed_real});
+    assign out_real = (!rst_n | flag) ? {IN_WIDTH{1'b0}} : 
+                      (switch_d4 ? added_real_d2[DATA_WIDTH-1:0]: delayed_real);
                                    
-    assign out_imag = (!rst_n | flag) ? 32'sd0 : 
-                      (switch_d4 ? {{15{added_imag_d2[16]}}, added_imag_d2} : 
-                                   {{15{delayed_imag[16]}}, delayed_imag});
-    buffer #(.DEPTH(DELAY), .DATA_WIDTH(DATA_WIDTH + 1))
+    assign out_imag = (!rst_n | flag) ? {IN_WIDTH{1'b0}} : 
+                      (switch_d4 ? added_imag_d2[DATA_WIDTH-1:0] : delayed_imag);
+
+    buffer #(.DEPTH(DELAY), .DATA_WIDTH(DATA_WIDTH))
         buff_inst(
             .clk(clk),
             .nrst(rst_n),
@@ -146,13 +142,13 @@ module stage #(
             .delayed_imag(raw_delayed_imag)
     );
 
-    add_sub #(.DATA_WIDTH(DATA_WIDTH + 1))
+    add_sub #(.DATA_WIDTH(DATA_WIDTH))
         addsub_inst(
             .clk(clk),
             .in1_real(delayed_real),
             .in1_imag(delayed_imag),
-            .in2_real(in_real_ext),
-            .in2_imag(in_imag_ext),
+            .in2_real(in_real),
+            .in2_imag(in_imag),
             .out1_real(raw_added_real),
             .out1_imag(raw_added_imag),
             .out2_real(raw_sub_real),

@@ -1,5 +1,5 @@
 module add_sub #(
-    parameter DATA_WIDTH = 16
+    parameter DATA_WIDTH = 32
 )(
     input clk,
     input  signed [DATA_WIDTH-1:0] in1_real,
@@ -8,8 +8,8 @@ module add_sub #(
     input  signed [DATA_WIDTH-1:0] in2_imag,
     output reg signed [DATA_WIDTH:0] out1_real,
     output reg signed [DATA_WIDTH:0] out1_imag,
-    output reg signed [DATA_WIDTH:0] out2_real,
-    output reg signed [DATA_WIDTH:0] out2_imag
+    output reg signed [DATA_WIDTH - 1:0] out2_real,
+    output reg signed [DATA_WIDTH - 1:0] out2_imag
 );
 
     reg signed [DATA_WIDTH-1:0] a_real;

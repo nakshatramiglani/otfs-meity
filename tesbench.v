@@ -8,7 +8,7 @@ module stage_tb;
     parameter WIDTH = 16;
     parameter IN_WIDTH = 32;       // Must be 32 to hold the shifted Q15 fractions
     parameter TWIDDLE_WIDTH = 16;
-    parameter STAGE = 2;
+    parameter STAGE = 1;
     
     // Q15 scaling factor for converting to/from floats
     localparam SCALE = 32768.0; 
@@ -25,8 +25,8 @@ module stage_tb;
     logic [$clog2(WIDTH)-1:0] sample_count;
 
     // Outputs are 32-bit to match your updated stage.v module
-    logic signed [31:0] out_real;
-    logic signed [31:0] out_imag;
+    logic signed [IN_WIDTH - 1:0] out_real;
+    logic signed [IN_WIDTH - 1:0] out_imag;
 
     // =======================================================
     // DUT Instantiation

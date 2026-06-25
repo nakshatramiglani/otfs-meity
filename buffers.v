@@ -3,7 +3,7 @@ To be optimized for 1024 point (ask Gemini)
 */
 
 module buffer #(
-    parameter DATA_WIDTH = 16,
+    parameter DATA_WIDTH = 32,
     parameter DEPTH      = 8
 )(
     input  wire                         clk,
