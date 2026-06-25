@@ -43,6 +43,9 @@ module stage #(
     wire signed [DATA_WIDTH:0] raw_added_real, raw_added_imag;
     wire signed [DATA_WIDTH - 1:0] raw_sub_real, raw_sub_imag;
 
+    wire signed [DATA_WIDTH - 1:0] feedback_delayed_real;
+    wire signed [DATA_WIDTH - 1:0] feedback_delayed_imag;
+
     wire signed [DATA_WIDTH:0] added_real = raw_added_real[DATA_WIDTH:0];
     wire signed [DATA_WIDTH:0] added_imag = raw_added_imag[DATA_WIDTH:0];
     wire signed [DATA_WIDTH - 1:0] subtracted_real = raw_sub_real;
@@ -91,8 +94,8 @@ module stage #(
     end
 
     // Masked assignments: Feed zeros into the buffer when in reset to prevent X propagation
-    assign delay_in_real = (!rst_n) ? '0 : (switch_d4 ? multiplied_real[DATA_WIDTH-1:0] : in_real);
-    assign delay_in_imag = (!rst_n) ? '0 : (switch_d4 ? multiplied_imag[DATA_WIDTH-1:0] : in_imag);
+    assign delay_in_real = (!rst_n) ? '0 : in_real;
+    assign delay_in_imag = (!rst_n) ? '0 : in_imag;
 
     logic signed [DATA_WIDTH:0] added_real_d1, added_real_d2;
     logic signed [DATA_WIDTH:0] added_imag_d1, added_imag_d2;
@@ -123,14 +126,14 @@ module stage #(
         flag = 1'b1;
         @(posedge switch_d4);
         flag = 1'b0;
-        repeat(STAGE) @(posedge switch_d4);
+        repeat(1 << (STAGE - 1)) @(posedge switch_d4);
         flag = 1'b1;
     end
+
     assign out_real = (!rst_n | flag) ? {IN_WIDTH{1'b0}} : 
-                      (switch_d4 ? added_real_d2[DATA_WIDTH-1:0]: delayed_real);
-                                   
+                      (switch_d4 ? added_real_d2[DATA_WIDTH-1:0]: feedback_delayed_real);
     assign out_imag = (!rst_n | flag) ? {IN_WIDTH{1'b0}} : 
-                      (switch_d4 ? added_imag_d2[DATA_WIDTH-1:0] : delayed_imag);
+                      (switch_d4 ? added_imag_d2[DATA_WIDTH-1:0] : feedback_delayed_imag);
 
     buffer #(.DEPTH(DELAY), .DATA_WIDTH(DATA_WIDTH))
         buff_inst(
@@ -140,6 +143,16 @@ module stage #(
             .in_imag(delay_in_imag),
             .delayed_real(raw_delayed_real),
             .delayed_imag(raw_delayed_imag)
+    );
+
+    buffer #(.DEPTH(DELAY), .DATA_WIDTH(DATA_WIDTH))
+        feedback_buff_inst(
+            .clk(clk),
+            .nrst(rst_n),
+            .in_real(multiplied_real),
+            .in_imag(multiplied_imag),
+            .delayed_real(feedback_delayed_real),
+            .delayed_imag(feedback_delayed_imag)
     );
 
     add_sub #(.DATA_WIDTH(DATA_WIDTH))

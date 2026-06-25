@@ -41,8 +41,10 @@ always @(posedge clk or negedge nrst) begin
 
         mem_real[ptr] <= in_real;
         mem_imag[ptr] <= in_imag;
-
-        ptr <= ptr + 1'b1;
+        if (ptr == DEPTH - 1)
+            ptr <= '0;
+        else
+            ptr <= ptr + 1'b1;
     end
 end
 
