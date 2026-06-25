@@ -54,6 +54,7 @@ module stage #(
     wire signed [31:0] multiplied_real;
     wire signed [31:0] multiplied_imag;
 
+    logic flag;
     logic switch;
     logic switch_d1, switch_d2, switch_d3, switch_d4;
     assign switch = sample_count[SIZE - STAGE];
@@ -120,11 +121,19 @@ module stage #(
 
     // Mask final output on reset
     // Mask final output on reset with explicit 16-bit (15-bit extension) hardcoding
-    assign out_real = (!rst_n) ? 32'sd0 : 
+
+    initial begin
+        flag = 1'b1;
+        @(posedge switch_d4);
+        flag = 1'b0;
+        @(posedge switch_d4);
+        flag = 1'b1;
+    end
+    assign out_real = (!rst_n | flag) ? 32'sd0 : 
                       (switch_d4 ? {{15{added_real_d2[16]}}, added_real_d2} : 
                                    {{15{delayed_real[16]}}, delayed_real});
                                    
-    assign out_imag = (!rst_n) ? 32'sd0 : 
+    assign out_imag = (!rst_n | flag) ? 32'sd0 : 
                       (switch_d4 ? {{15{added_imag_d2[16]}}, added_imag_d2} : 
                                    {{15{delayed_imag[16]}}, delayed_imag});
     buffer #(.DEPTH(DELAY), .DATA_WIDTH(DATA_WIDTH + 1))
