@@ -4,26 +4,14 @@ module twiddle_factors #(
 )(
     input logic clk,
     input logic rst_n,
-    input logic done, 
     input logic [$clog2(WIDTH)-2:0] angle_idx,
-
+    input logic signed [TWIDDLE_WIDTH-1:0] rom_real [0:WIDTH/4-1],
+    input logic signed [TWIDDLE_WIDTH-1:0] rom_imag [0:WIDTH/4-1],
     output logic signed [TWIDDLE_WIDTH-1:0] twiddle_real,
     output logic signed [TWIDDLE_WIDTH-1:0] twiddle_imag
 );
 
     localparam SIZE = $clog2(WIDTH);
-    localparam QUARTER_WIDTH = WIDTH / 4;
-
-    (* ram_style = "distributed" *)
-    logic signed [TWIDDLE_WIDTH-1:0] rom_real [0:QUARTER_WIDTH-1];
-
-    (* ram_style = "distributed" *)
-    logic signed [TWIDDLE_WIDTH-1:0] rom_imag [0:QUARTER_WIDTH-1];
-
-    initial begin
-        $readmemh("data/fft/twiddles_real.hex", rom_real);
-        $readmemh("data/fft/twiddles_imag.hex", rom_imag);
-    end
 
     logic signed [TWIDDLE_WIDTH-1:0] raw_r;
     logic signed [TWIDDLE_WIDTH-1:0] raw_i;
@@ -40,7 +28,7 @@ module twiddle_factors #(
             twiddle_real <= '0;
             twiddle_imag <= '0;
         end
-        else if (done) begin
+        else begin
             if (swap_flag) begin
                 twiddle_real <= raw_i;
                 twiddle_imag <= -raw_r;
