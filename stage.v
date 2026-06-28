@@ -7,21 +7,25 @@ module stage #(
     parameter WIDTH = 16,
     parameter IN_WIDTH = 32,
     parameter TWIDDLE_WIDTH = 16,
-    parameter STAGE = 1 // stages start from 1
+    parameter STAGE = 1// stages start from 1
 )(
     input logic clk,
     input logic rst_n,
     input logic signed [IN_WIDTH-1:0] in_real,
     input logic signed [IN_WIDTH-1:0] in_imag,
     input logic [$clog2(WIDTH) - 1:0] sample_count,
+    input logic signed [TWIDDLE_WIDTH-1:0] rom_real [0:WIDTH/4-1],
+    input logic signed [TWIDDLE_WIDTH-1:0] rom_imag [0:WIDTH/4-1],
 
     output logic signed [IN_WIDTH-1:0] out_real,
     output logic signed [IN_WIDTH-1:0] out_imag
 );
 
+
     localparam SIZE       = $clog2(WIDTH);
     localparam DATA_WIDTH = IN_WIDTH;
     localparam DELAY      = 1 << (SIZE - STAGE);
+    localparam QUARTER_WIDTH = WIDTH / 4;
 
     wire signed [DATA_WIDTH-1:0] delay_in_real;
     wire signed [DATA_WIDTH-1:0] delay_in_imag;
@@ -122,12 +126,13 @@ module stage #(
     // Mask final output on reset
     // Mask final output on reset with explicit 16-bit (15-bit extension) hardcoding
 
-    initial begin
-        flag = 1'b1;
-        @(posedge switch_d4);
-        flag = 1'b0;
-        repeat(1 << (STAGE - 1)) @(posedge switch_d4);
-        flag = 1'b1;
+always_ff @(posedge clk or negedge rst_n) begin
+        if (!rst_n) begin
+            flag <= 1'b1;
+        end else begin
+            // For continuous hardware streaming, just let the data flow
+            flag <= 1'b0; 
+        end
     end
 
     assign out_real = (!rst_n | flag) ? {IN_WIDTH{1'b0}} : 
@@ -175,7 +180,8 @@ module stage #(
             .clk(clk),
             .rst_n(rst_n),
             .angle_idx(angle_idx),
-            .done(done),
+            .rom_real(rom_real),
+            .rom_imag(rom_imag),
             .twiddle_real(twiddle_real),
             .twiddle_imag(twiddle_imag)
     );
