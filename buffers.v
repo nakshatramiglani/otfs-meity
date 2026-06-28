@@ -18,7 +18,9 @@ module buffer #(
 
 localparam PTR_LEN = (DEPTH <= 1) ? 1 : $clog2(DEPTH);
 
+(* ram_style = "distributed" *)
 reg signed [DATA_WIDTH-1:0] mem_real [0:DEPTH-1];
+(* ram_style = "distributed" *)
 reg signed [DATA_WIDTH-1:0] mem_imag [0:DEPTH-1];
 
 reg [PTR_LEN-1:0] ptr;
