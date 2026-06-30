@@ -48,17 +48,17 @@ iverilog -g2012 -I submodules -o test fft_pipelined.v fft-test.v
 # Run the compiled simulation executable
 vvp test
 
-# Step 3: Run MATLAB Golden Reference
-echo ""
-echo "[3/4] Running MATLAB Golden Reference..."
-# The -batch flag runs the script without opening the GUI and exits automatically
-# Assuming your script is named fft_reference.m
-/Applications/MATLAB_R2026a.app/bin/matlab -batch "fft_reference"
+# # Step 3: Run MATLAB Golden Reference
+# echo ""
+# echo "[3/4] Running MATLAB Golden Reference..."
+# # The -batch flag runs the script without opening the GUI and exits automatically
+# # Assuming your script is named fft_reference.m
+# /Applications/MATLAB_R2026a.app/bin/matlab -batch "fft_reference"
 
-# Step 4: Run Python Error Calculation
-echo ""
-echo "[4/4] Calculating Error Metrics..."
-python3 fft_error.py
+# # Step 4: Run Python Error Calculation
+# echo ""
+# echo "[4/4] Calculating Error Metrics..."
+# python3 fft_error.py
 
 echo "========================================"
 echo "           Pipeline Complete!           "

@@ -1,7 +1,6 @@
 `timescale 1ns/1ps
 
 `include "submodules/stage.v"
-`include "submodules/bit-reversal.v"
 
 module fft_top #(
     parameter WIDTH = 1024,
@@ -86,17 +85,6 @@ module fft_top #(
         end
     endgenerate
 
-    bit_reversal #(
-        .WIDTH(WIDTH),
-        .IN_WIDTH(IN_WIDTH)
-    ) bit_rev_inst (
-        .clk(clk),
-        .rst_n(rst_n),
-        .in_real(stage_real[NUM_STAGES]),
-        .in_imag(stage_imag[NUM_STAGES]),
-        .in_count(stage_count[NUM_STAGES]),
-        .out_real(out_real),
-        .out_imag(out_imag)
-    );
-
+    assign out_real = stage_real[NUM_STAGES];
+    assign out_imag = stage_imag[NUM_STAGES];
 endmodule

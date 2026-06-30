@@ -15,7 +15,7 @@ module fft_top_tb;
     localparam PING_PONG    = WIDTH; // Wait for frame to buffer
     localparam READ_OUT     = WIDTH; // Wait for frame to stream out
     
-    localparam FLUSH_CYCLES = BUFFER_DELAY + MATH_DELAY + PING_PONG + READ_OUT;
+    localparam FLUSH_CYCLES = BUFFER_DELAY + MATH_DELAY + 1;
 
     logic clk;
     logic rst_n;
@@ -53,7 +53,7 @@ module fft_top_tb;
     end
 
     initial begin
-        $dumpfile("testbenches/fft_top_tb.vcd");
+        $dumpfile("fft_top_tb.vcd");
         $dumpvars(0, fft_top_tb);
 
         file_in = $fopen("data/input.txt", "r");
@@ -84,20 +84,13 @@ module fft_top_tb;
 
     integer sim_cycle = 0;
 
-    localparam OUTPUT_START = BUFFER_DELAY + MATH_DELAY + PING_PONG;
+    localparam OUTPUT_START = BUFFER_DELAY + MATH_DELAY - 1;
     localparam OUTPUT_END = OUTPUT_START + WIDTH;
 
     always @(posedge clk) begin
         if(rst_n) begin
             sim_cycle++;
-            // 1. Display Inputs ONLY while the ramp data is being fed
-            if (sim_cycle <= WIDTH) begin
-                $display("Time: %0t | IN  | Count: %2d | Val: (%8f, %8f)",
-                         $time, sample_count, 
-                         real'(in_real) / SCALE, real'(in_imag) / SCALE);
-            end
             
-            // 2. Display Outputs ONLY when the valid FFT frame emerges
             if (sim_cycle - 1 > OUTPUT_START && sim_cycle <= OUTPUT_END + 1) begin
                 integer bin;
                 bin = sim_cycle - OUTPUT_START - 1;
