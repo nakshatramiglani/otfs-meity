@@ -51,7 +51,6 @@ in_real/in_imag ──▶ [Stage 1] ─▶ [Stage 2] ─▶ ... ─▶ [Stage 10
 | 📄 `fft/fft_pipelined.v` | Top-level `fft_top` module — instantiates and pipelines all FFT stages plus the bit-reversal output stage. |
 | 📁 `fft/submodules/` | `stage.v` (SDF butterfly), `add_sub.v`, `complex_multiply.v`, `twiddle_fetch.v`, `buffers.v` (circular delay line), `bit-reversal.v` (ping-pong reorder RAM). |
 | 📄 `fft/fft-test.v` | Top-level testbench: reads `data/input.txt`, drives the DUT cycle-by-cycle, and writes results to `results/output.json`. |
-| 📁 `fft/testbenches/` | Unit-level testbench(es) for individual sub-blocks (e.g. a single butterfly `stage`). |
 | 📄 `fft/fft_reference.m` | MATLAB golden-reference script — runs double-precision `fft()` on the same input file and exports `data/ref.json`. |
 | 📄 `fft/fft_error.py` | Computes MSE, RMSE, max absolute error, and % error (relative to peak signal magnitude) between RTL and golden-reference outputs. |
 | 📄 `fft/generate_input.py` | Generates 1024 lines of bounded random complex integer test vectors (`data/input.txt`). |
