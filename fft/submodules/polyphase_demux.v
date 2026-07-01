@@ -7,21 +7,23 @@ Data is routed to all memory banks at once and uses a one-hot write-enable decod
 
 module polyphase_demux #(
     parameter IN_WIDTH = 36,
-    parameter NUM_BANKS = 32, // the M in the MxN representation of the transform (number of banks)
-    parameter BANK_DEPTH = 32 // the N in the MxN representation of the transform (depth of each bank)
+    parameter NUM_BANKS = 32, // the M in the M x N representation of the transform (number of banks)
+    parameter BANK_DEPTH = 32 // the N in the M x N representation of the transform (depth of each bank)
 )(
+    // Control signals
     input logic clk,
     input logic rst_n,
     /*input logic valid_in,*/ // Keeping this, just in case we decide to add a valid_in signal (we should ideally)
+
+
     input logic signed [IN_WIDTH - 1:0] in_real,
     input logic signed [IN_WIDTH - 1:0] in_imag,
 
-    // Outputs to the ping-pong memory banks
+    // Outputs to the memory banks
     output logic signed [IN_WIDTH - 1:0] broadcast_real,
     output logic signed [IN_WIDTH - 1:0] broadcast_imag,
     output logic [NUM_BANKS - 1:0] bank_we, // One-hot write enable (column)
     output logic [$clog2(BANK_DEPTH) - 1:0] bank_waddr, // Shared write address for all banks (row)
-    output logic ping_pong_select, // Toggles every time a row is written
     output logic frame_done // Goes high for 1 cycle when a full 2D grid is populated
     );
 
@@ -46,7 +48,6 @@ module polyphase_demux #(
         if (!rst_n) begin
             phase_cnt <= '0;
             addr_cnt <= '0;
-            ping_pong_select <= 1'b0;
             frame_done <= 1'b0;
             bank_we <= '0;
         end
@@ -58,7 +59,6 @@ module polyphase_demux #(
                 if (phase_cnt == NUM_BANKS - 1) begin
                     phase_cnt <= '0; // Wrap around to zero to start with next row
                     if (addr_cnt == BANK_DEPTH - 1) begin // If this was the last row and it is complete, the entire M x N grid is populated.
-                        ping_pong_select <= ~ping_pong_select;
                         frame_done <= 1'b1;
                         addr_cnt <= '0;
                     end
